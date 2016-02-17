@@ -32,7 +32,7 @@ class UserRepository extends EntityRepository
                     break;
 
                 case 'order':
-                    $qb->orderBy('post.createAt', $value);
+                    $qb->orderBy('user.createdAt', $value);
                     break;
 
                 case 'conditions':
@@ -45,9 +45,9 @@ class UserRepository extends EntityRepository
 
                             case 'Search' :
 
-                                $qb->orWhere('post.body LIKE :search');
-                                $qb->orWhere('post.name LIKE :search');
-                                $qb->orWhere('post.title LIKE :search');
+                                $qb->orWhere('user.firstname LIKE :search');
+                                $qb->orWhere('user.lastname LIKE :search');
+                                $qb->orWhere('user.email LIKE :search');
                                 $qb->setParameter('search', '%'.$v.'%');
 
                                 break;

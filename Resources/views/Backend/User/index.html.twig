@@ -1,0 +1,79 @@
+{% extends "WHUserBundle:Backend:main.html.twig" %}
+
+{% form_theme form 'bootstrap_3_layout.html.twig' %}
+
+{% block ariane %}{{ parent() }}<li><a href="{{ path('wh_admin_users') }}">liste</a></li>{% endblock %}
+
+{% block title_right %}<a href="{{ path('wh_admin_user_create') }}" class="btn btn-success pull-right" {{ Smart.modal() }}><i class="fa fa-plus"></i> Nouveau</a>{% endblock %}
+
+{% block subtitle %}> Liste{% endblock %}
+
+{% block content %}
+
+        <div class="well">
+
+            <h1>Gestion des membres</h1>
+
+            {{ form_start(form) }}
+
+            <div class="row">
+                <div class="col-md-8">{{ form_row(form.Search) }}</div>
+                <div class="col-md-4">
+                    <button class="btn btn-success" type="submit">
+                        <i class="fa fa-check"></i> <span class="hidden-mobile">Chercher</span>
+                    </button>
+                </div>
+            </div>
+
+            {{ form_end(form) }}
+
+        </div>
+
+        {{ Smart.openTable('fa-list', 'List') }}
+
+        <thead>
+        <tr>
+            <th></th>
+            <th>Nom</th>
+            <th>Email</th>
+            {% for role in roles %}
+                <th class="text-center">{{ role }}</th>
+            {% endfor %}
+        </tr>
+        </thead>
+
+        <tbody>
+        {% for entity in entities %}
+            <tr class="">
+
+                <td>
+                    <a href="{{ path('wh_admin_user_send_access', {'User': entity.id}) }}" class="btn btn-xs btn-success" {{ Smart.confirm('Etes vous sûre de vouloir rénitilisation l’accès') }}><i class="fa fa-envelope-o"></i> {{ 'Envoyer un accès'|trans }}</a>
+                    <a href="{{ path('wh_admin_user_update', { 'User': entity.id }) }}" class="btn btn-xs btn-primary" {{  Smart.modal() }}><i class="fa fa-edit"></i></a>
+                    <a href="{{ path('wh_admin_user_delete', { 'User': entity.id }) }}" class="btn btn-xs btn-danger" {{  Smart.modal('sm') }}><i class="fa fa-trash-o"></i></a>
+                </td>
+
+                <td>{{ entity.name }}</td>
+                <td>{{ entity.email }}</td>
+                {% for role in roles %}
+                    <td class="text-center">
+                        {% if role in entity.roles %}<i class="fa fa-check"></i>{% endif %}
+                    </td>
+                {% endfor %}
+            </tr>
+
+        {% endfor %}
+        </tbody>
+
+        {{ Smart.closeTable(pagination, entities) }}
+
+
+{% endblock %}
+
+
+{% block javascript %}
+
+    {{ parent() }}
+
+    {{ Smart.modalSuccess() }}
+
+{% endblock %}

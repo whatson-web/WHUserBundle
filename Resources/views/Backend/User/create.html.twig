@@ -1,0 +1,42 @@
+{% extends "WHSmartAdminBundle::popup.html.twig" %}
+
+{% form_theme form 'bootstrap_3_layout.html.twig' %}
+
+{% block title %} Créer {% endblock %}
+
+{% block body %}
+
+{{ form_start(form, {'action': path('wh_admin_user_create'), 'method': 'POST'}) }}
+
+<div class="padded">
+
+    <div class="row">
+        <div class="col-md-2">{{ form_row(form.civility) }}</div>
+        <div class="col-md-4">{{ form_row(form.firstname) }}</div>
+        <div class="col-md-6">{{ form_row(form.lastname) }}</div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">{{ form_row(form.email) }}</div>
+    </div>
+
+    {{ form_row(form.roles) }}
+
+</div>
+
+{{ Smart.modalSubmitBtn(form) }}
+
+
+{{ form_end(form) }}
+
+
+    <script>
+
+        var form = $(".modal form");
+        $('.modal .select2').select2();
+        select2ajx($('#wh_userbundle_user_create_organisation'));
+
+    </script>
+
+    {{ Smart.modalSubmitAjax() }}
+
+{% endblock %}

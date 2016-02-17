@@ -1,0 +1,136 @@
+{% extends "WHUserBundle:User:layoutAdmin.html.twig" %}
+
+{% block subtitle %}Voir{% endblock %}
+
+{% block center %}
+
+
+    <div class="row">
+        <!-- NEW WIDGET START -->
+        <article class="col-xs-12 col-sm-12 col-md-7 col-lg-8">
+
+            <div class="well well-light well-sm no-margin no-padding">
+
+                <div class="jumbotron">
+
+                    <div class="row">
+
+                        <div class="col-md-2">
+                            {% if entity.photo %}<img src="{{ entity.photo.getWebPath | imagine_filter('photo_profil') }}" alt="{{ entity.name }}" />{% endif %}
+                        </div>
+                        <div class="col-md-10">
+                            <h1>{{ entity.name }}</h1>
+                            <small><i>
+                                    <small> {% if entity.Organisation %}<a href="{{ path('whad_organisation_show', {'id' : entity.Organisation.id}) }}">{{ entity.Organisation.socialReason }}</a> / {% endif %}{{ entity.function }} </small></h1>
+                                    {% for role in entity.roles %}
+
+                                        {{ role }}{% if loop.last == false %},{% endif %}
+
+                                    {% endfor %}
+                                </i></small>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="row">
+
+                    <div class="col-sm-12">
+
+                        <div class="row">
+
+                            <div class="col-sm-3 profile-pic">
+
+                                <div class="padding-10">
+                                    <h4 class="font-md"><strong>5</strong>
+                                        <br>
+                                        <small>Commandes</small></h4>
+                                    <br>
+                                    <h4 class="font-md"><strong>260</strong>
+                                        <br>
+                                        <small>Connexions</small></h4>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+
+                                <ul class="list-unstyled">
+                                    <li>
+                                        <p class="text-muted">
+                                            <span><i class="fa fa-phone"></i>&nbsp;&nbsp;{{ entity.phone }}</span>
+                                        </p>
+                                    </li>
+                                    <li>
+                                        <p class="text-muted">
+                                            <span><i class="fa fa-mobile"></i>&nbsp;&nbsp;{{ entity.mobile }}</span>
+                                        </p>
+                                    </li>
+                                    <li>
+                                        <p class="text-muted">
+                                            <i class="fa fa-envelope"></i>&nbsp;&nbsp;<a href="mailto:{{ entity.email }}">{{ entity.email }}</a>
+                                        </p>
+                                    </li>
+
+                                    {% for contact in entity.contacts %}
+                                        <p class="text-muted">
+                                            <i class="fa fa-envelope"></i>&nbsp;&nbsp;{{ contact.value }}
+                                        </p>
+                                    {% endfor %}
+
+                                    <h5>Adresses</h5>
+                                    <adress>{{ entity.adress }}<br/>{{ entity.adressCplt }}<br/>{{ entity.zipCode }} {{ entity.town }} ({{ entity.country }})</adress>
+
+
+                                </ul>
+                                <br>
+                                <p class="font-md">
+                                    <i>Commentaire(s)</i>
+                                </p>
+                                <p>
+
+                                    {{ entity.comment }}
+
+                                </p>
+                                <br>
+                                <a href="mailto:{{ entity.email }}" class="btn btn-default btn-xs"><i class="fa fa-envelope-o"></i> Ecrire</a>
+                                <br>
+                                <br>
+
+                            </div>
+                            <div class="col-sm-3">
+                                map
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </article>
+
+        <article class="col-xs-12 col-sm-12 col-md-5 col-lg-4">
+
+
+            <div class="well padding-10">
+
+                <h5 class="margin-top-0"><i class="fa fa-list"></i> Historique : </h5>
+
+                <table class="table">
+                    <tr>
+                        <td>26/02/2015</td>
+                        <td>Jérôme Lebleu</td>
+                        <td>Création du contact</td>
+                    </tr>
+                </table>
+
+            </div>
+
+        </article>
+
+    </div>
+
+{% endblock %}

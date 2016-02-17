@@ -7,10 +7,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Security\Core\Util\SecureRandom;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 
 use APP\UserBundle\Entity\User;
-use APP\UserBundle\Form\UserCreateType;
-use APP\UserBundle\Form\UserUpdateType;
+use APP\UserBundle\Form\UserType;
 
 
 /**
@@ -21,40 +21,79 @@ use APP\UserBundle\Form\UserUpdateType;
 class UserController extends Controller
 {
 
+
     /**
-     * @Route("/", name="admin_users")
+     * @Route("/{page}", name="wh_admin_users", requirements={"page" = "\d+"}, defaults={"page" = 1})
+     * @param $page
      * @param Request $request
-     * @return array
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
      */
-    public function indexAction(Request $request)
+    public function indexAction($page = 1, Request $request)
     {
 
         $em = $this->getDoctrine()->getManager();
 
-        $data = array();
+        $session = $this->get('session');
 
-        $formSearch = $this->createForm(new UserSearchType());
+        $sessName = 'dataUserSearch';
 
-        $formSearch->handleRequest($request);
+        $data = $session->get($sessName);
 
-        if ($formSearch->isValid()) $data = $formSearch->getData();
+        if (!$data) {
+            $data = array();
+        }
 
-        //Liste des users
-        $entities = $em->getRepository('WHUserBundle:User')->getAll(1, 100, $data);
+        $form = $this->_returnFormSearch($data);
 
+        if ($request->getMethod() == 'POST') {
+
+            $form->handleRequest($request);
+
+            $data = $form->getData();
+
+            // set and get session attributes
+            $session->set($sessName, $data);
+
+            return $this->redirect($request->headers->get('referer'));
+
+        }
+
+        $max = $request->query->get('max');
+
+        $max = ($max) ? $max : 50;
+
+        $entities = $em->getRepository('APPUserBundle:User')->get(
+            'paginate',
+            array(
+                'limit' => $max,
+                'page' => $page,
+                'conditions' => $data
+            )
+        );
 
         //Lise des rôles
         $roles = array();
         $r = $this->container->getParameter('security.role_hierarchy.roles');
-        foreach($r as $k => $i) $roles[] = $k;
+        foreach ($r as $k => $i) {
+            $roles[] = $k;
+        }
 
+        $pagination = array(
+            'page'         => $page,
+            'route'        => 'wh_admin_users',
+            'pages_count'  => ceil(count($entities) / $max),
+            'route_params' => array(),
+            'max'          => $max
+        );
 
         //Sortie
-        return $this->render('WHUserBundle:User:admin/index.html.twig',
+        return $this->render(
+            'WHUserBundle:Backend:User/index.html.twig',
             array(
-                'entities'      => $entities,
-                'formSearch'    => $formSearch->createView(),
-                'roles'         => $roles
+                'entities' => $entities,
+                'form' => $form->createView(),
+                'roles' => $roles,
+                'pagination' => $pagination
 
             )
 
@@ -63,18 +102,40 @@ class UserController extends Controller
 
     }
 
+    private function _returnFormSearch($data)
+    {
+
+        $em = $this->getDoctrine()->getEntityManager();
+
+        $form = $this->createFormBuilder($data)
+            ->add(
+                'Search', 'text', array(
+                    'label'     => false,
+                    'attr'      => array('placeholder' => 'Chercher'),
+                    'required' => false
+                )
+            )
+            ->getForm();
+
+
+        return $form;
+
+    }
+
+
+
     /**
-     * @Route("/create", name="admin_users_create")
-     * @param $type
+     * @Route("/create", name="wh_admin_user_create")
      * @param Request $request
      * @return JsonResponse|\Symfony\Component\HttpFoundation\Response
      */
-    public function createAction($type, Request $request) {
+    public function createAction(Request $request)
+    {
 
         $entity = new User();
 
         $form = $this->createForm(
-            new UserCreateType(array(
+            new UserType(array(
                 'roles' => $this->container->getParameter('security.role_hierarchy.roles')
             )),
             $entity
@@ -88,131 +149,164 @@ class UserController extends Controller
             $em->persist($entity);
             $em->flush();
 
-            $request->getSession()->getFlashBag()->add('success', 'Membre créée');
+            $request->getSession()->getFlashBag()->add('success', 'Opération réussie');
 
             $response = new JsonResponse();
 
-            $url = ($this->get('request')->request->get('submited') == 'edit') ? $this->generateUrl('whad_user_update', array('id' => $entity->getId())) : $this->generateUrl('whad_user');
-
-            $response->setData(array(
-                    'valid'     => true,
-                    'redirect'  => $url,
-                    'User'      => array(
-                        'id'        => $entity->getId(),
-                        'username'  => $entity->getName()
-                    )
-                ));
+            $response->setData(
+                array(
+                    'valid' => true,
+                    'redirect' => $this->generateUrl('wh_admin_users')
+                )
+            );
 
             return $response;
 
 
         }
 
-        return $this->render('WHUserBundle:User:admin/create.html.twig', array(
-                'formCreate'   => $form->createView(),
-                'type' => $type,
+        return $this->render(
+            'WHUserBundle:Backend:User/create.html.twig',
+            array(
+                'form' => $form->createView()
 
-            ));
-
+            )
+        );
 
 
     }
 
+
     /**
-     * @Route("/update/{User}", name="admin_user_update")
      * @param $User
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
      * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+     * @ParamConverter("User", class="APPUserBundle:User")
+     * @Route("/update/{User}", name="wh_admin_user_update")
      */
-    public function updateAction($User, Request $request) {
+    public function updateAction($User, Request $request)
+    {
 
         $em = $this->getDoctrine()->getManager();
 
-
-
-        if (!$entity) throw $this->createNotFoundException('Ce user est inconnue.');
-
-
         $form = $this->createForm(
-            new UserEditType(array(
+            new UserType(array(
                 'roles' => $this->container->getParameter('security.role_hierarchy.roles')
             )),
-            $entity
+            $User
         );
 
         if ($form->handleRequest($request)->isValid()) {
 
 
-            $url = ($this->get('request')->request->get('submited') == 'edit') ? $this->generateUrl('admin_user_update', array('id' => $entity->getId())) : $this->generateUrl('whad_user');
-
+            $em->persist($User);
             $em->flush();
 
-            //Supprimer les contacts vides
-            $contacts = $em->getRepository('WHOrganisationBundle:Contact')->findBy(array('value' => ''));
+            $request->getSession()->getFlashBag()->add('success', 'Opration réussie');
 
-            foreach($contacts as $a) $em->remove($a);
+            $response = new JsonResponse();
 
-            //Supprimer les adresses vides
-            $adress = $em->getRepository('WHOrganisationBundle:Adress')->findBy(array('name' => ''));
+            $response->setData(
+                array(
+                    'valid' => true,
+                    'redirect' => $this->generateUrl('wh_admin_users')
+                )
+            );
 
-            foreach($adress as $a) $em->remove($a);
+            return $response;
 
-            $em->flush();
 
-            //Fin de traitement
-            $request->getSession()->getFlashBag()->add('success', 'Membre modifié');
-
-            return $this->redirect($this->generateUrl('admin_user_update', array('id' => $id)));
         }
 
 
-        return $this->render('WHUserBundle:User:admin/update.html.twig', array(
-                'formCreate'   => $form->createView(),
-                'entity' => $entity
-            ));
+        return $this->render(
+            'WHUserBundle:Backend:User/update.html.twig',
+            array(
+                'form' => $form->createView(),
+                'User' => $User
+            )
+        );
 
 
     }
 
 
     /**
-     * @Route("/show/{User}", name="admin_user_show")
+     * @Route("/send/{User}", name="wh_admin_user_send_access")
      * @param $User
      * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse
+     * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+     * @ParamConverter("User", class="APPUserBundle:User")
      */
-    public function showAction ($User, Request $request) {
+    public function sendAccessAction($User, Request $request)
+    {
+
 
         $em = $this->getDoctrine()->getManager();
 
-        $entity = $em->getRepository('WHUserBundle:User')->find($id);
+        $password = $this->get('wh.user.password')->genere(6);
+        $User->setPlainPassword($password);
+        $User->setEnabled(true);
+
+        $em->persist($User);
+        $em->flush();
 
 
-        return $this->render('WHUserBundle:User:admin/show.html.twig', array(
-                'entity' => $entity,
-            ));
+        if ($this->get('wh.user.notification')->sendAccess($User, $password)) {
+
+            $request->getSession()->getFlashBag()->add('success', 'Accès envoyé');
+
+        } else {
+
+            $request->getSession()->getFlashBag()->add('error', 'Une erreur est survenue');
+
+        }
+
+        return $this->redirect($this->generateUrl('wh_admin_users'));
+
+
+    }
+
+
+
+    /**
+     * @Route("/show/{User}", name="wh_admin_user_show")
+     * @param $User
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\Response
+     * @ParamConverter("User", class="APPUserBundle:User")
+     */
+    public function showAction($User, Request $request)
+    {
+
+
+        return $this->render(
+            'WHUserBundle:User:admin/show.html.twig',
+            array(
+                'User' => $User,
+            )
+        );
 
     }
 
 
     /**
-     * SUPPRESSION
-     *
+     * @Route("/delete/{User}", name="wh_admin_user_delete")
      * @param Request $request
-     * @param $id
+     * @param $User
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
      * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+     * @ParamConverter("User", class="APPUserBundle:User")
      */
-    public function deleteAction(Request $request, $id)
+    public function deleteAction(Request $request, $User)
     {
 
         $em = $this->getDoctrine()->getManager();
 
-        $entity = $em->getRepository('WHUserBundle:User')->find($id);
-
         $form = $this->createFormBuilder()
-            ->setAction($this->generateUrl('whad_user_delete', array('id' => $id)))
+            ->setAction($this->generateUrl('wh_admin_user_delete', array('User' => $User->getId())))
             ->setMethod('DELETE')
             ->getForm();
 
@@ -220,62 +314,30 @@ class UserController extends Controller
 
         if ($form->isValid()) {
 
-            $em = $this->getDoctrine()->getManager();
-            $entity = $em->getRepository('WHUserBundle:User')->find($id);
-
-            if (!$entity) {
-                throw $this->createNotFoundException('Unable to find User entity.');
-            }
-
-            $em->remove($entity);
+            $em->remove($User);
             $em->flush();
 
-            $request->getSession()->getFlashBag()->add('success', 'User supprimée');
+            $request->getSession()->getFlashBag()->add('success', 'User supprimé');
 
-            return $this->redirect($this->generateUrl('whad_user'));
+            $response = new JsonResponse();
 
+            $response->setData(
+                array(
+                    'valid' => true,
+                    'redirect' => $this->generateUrl('wh_admin_users')
+                )
+            );
+
+            return $response;
         }
 
-        return $this->render('WHUserBundle:User:admin/delete.html.twig', array(
-            'entity' => $entity,
-            'form'   => $form->createView()
-        ));
-
-
-    }
-
-
-
-    public function sendAccessAction($id, Request $request) {
-
-
-        $em = $this->getDoctrine()->getManager();
-
-        $userManager = $this->container->get('fos_user.user_manager');
-
-        $entity = $em->getRepository('WHUserBundle:User')->find($id);
-
-        if (!$entity) throw $this->createNotFoundException('Unable to find User entity.');
-
-        $password = $this->get('wh.user.password')->genere(6);
-        $entity->setPlainPassword($password);
-        $entity->setEnabled(true);
-
-        $userManager->updateUser($entity);
-
-
-        if($this->get('wh.user.notification')->sendAccess($entity, $password)) {
-
-            $request->getSession()->getFlashBag()->add('success', $this->get('translator')->trans('Admin.CompteEnvoye.succes'));
-
-        }else{
-
-            $request->getSession()->getFlashBag()->add('error', $this->get('translator')->trans('Core.error'));
-
-        }
-
-        return $this->redirect($this->generateUrl('whad_user'));
-
+        return $this->render(
+            'WHUserBundle:Backend:User/delete.html.twig',
+            array(
+                'User' => $User,
+                'form' => $form->createView()
+            )
+        );
 
 
     }

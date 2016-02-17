@@ -1,4 +1,14 @@
 services:
-#    wh_user.example:
-#        class: WH\UserBundle\Example
-#        arguments: [@service_id, "plain_value", %parameter%]
+    wh.user.notification:
+        class: WH\UserBundle\Services\Notification
+        arguments: ['@service_container']
+
+    wh.user.password:
+        class: WH\UserBundle\Services\Password
+        arguments: ['@service_container']
+
+    wh.user.password_resetting:
+        class: WH\UserBundle\EventListener\ChangePasswordListener
+        arguments: [ @router ]
+        tags:
+            - { name: kernel.event_subscriber }

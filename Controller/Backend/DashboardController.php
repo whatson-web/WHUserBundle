@@ -13,7 +13,7 @@ class DashboardController extends Controller
 {
 
     /**
-     * @Route("/", name="admin_home")
+     * @Route("/", name="wh_admin_home")
      */
     public function indexAction()
     {

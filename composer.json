@@ -20,7 +20,8 @@
         "php": ">=5.3.9",
         "symfony/symfony": "2.7.*",
         "friendsofsymfony/user-bundle": "~2.0@dev",
-        "wh/smart-admin-bundle": "dev-master"
+        "wh/smart-admin-bundle": "dev-master",
+        "wh/main-bundle": "dev-master"
     },
     "autoload": {
         "psr-0": {
