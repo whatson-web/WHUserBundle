@@ -1,0 +1,32 @@
+{
+    "name": "wh/user-bundle",
+    "type": "symfony-bundle",
+    "description": "Symfony WHUserBundle",
+    "keywords": ["user"],
+    "license": "GPL-3.0+",
+    "authors": [
+        {
+            "name": "Jérôme Lebleu",
+            "email": "jerome@whatson-web.com",
+            "homepage": "http://www.whatson-web.com"
+        },
+        {
+            "name": "Jean François Thuillier",
+            "email": "jf@whatson-web.com",
+            "homepage": "http://www.whatson-web.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.9",
+        "symfony/symfony": "2.7.*",
+        "friendsofsymfony/user-bundle": "~2.0@dev",
+        "wh/smart-admin-bundle": "dev-master"
+    },
+    "autoload": {
+        "psr-0": {
+            "WH\\UserBundle": ""
+        }
+    },
+    "target-dir": "WH/UserBundle",
+    "minimum-stability": "dev"
+}
