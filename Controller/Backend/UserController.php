@@ -10,7 +10,7 @@ use Symfony\Component\Security\Core\Util\SecureRandom;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 
 use APP\UserBundle\Entity\User;
-use APP\UserBundle\Form\UserType;
+use WH\UserBundle\Form\UserType;
 
 
 /**
