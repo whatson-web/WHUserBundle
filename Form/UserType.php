@@ -9,7 +9,6 @@ use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 class UserType extends AbstractType
 {
 
-
     private $roles;
 
     public function __construct($options = array())
