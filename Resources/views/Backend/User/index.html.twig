@@ -47,7 +47,7 @@
             <tr class="">
 
                 <td>
-                    <a href="{{ path('wh_admin_user_send_access', {'User': entity.id}) }}" class="btn btn-xs btn-success" {{ Smart.confirm('Etes vous sûre de vouloir rénitilisation l’accès') }}><i class="fa fa-envelope-o"></i> {{ 'Envoyer un accès'|trans }}</a>
+                    <a href="{{ path('wh_admin_user_send_access', {'User': entity.id}) }}" class="btn btn-xs btn-success" {{ Smart.confirm('Etes-vous sûr de vouloir réinitialiser l\'accès ?') }}><i class="fa fa-envelope-o"></i> {{ 'Envoyer un accès'|trans }}</a>
                     <a href="{{ path('wh_admin_user_update', { 'User': entity.id }) }}" class="btn btn-xs btn-primary" {{  Smart.modal() }}><i class="fa fa-edit"></i></a>
                     <a href="{{ path('wh_admin_user_delete', { 'User': entity.id }) }}" class="btn btn-xs btn-danger" {{  Smart.modal('sm') }}><i class="fa fa-trash-o"></i></a>
                 </td>

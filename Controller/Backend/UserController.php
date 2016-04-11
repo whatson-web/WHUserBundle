@@ -250,9 +250,7 @@ class UserController extends Controller
         $User->setPlainPassword($password);
         $User->setEnabled(true);
 
-        $em->persist($User);
-        $em->flush();
-
+        $this->get('fos_user.user_manager')->updateUser($User);
 
         if ($this->get('wh.user.notification')->sendAccess($User, $password)) {
 
@@ -264,7 +262,7 @@ class UserController extends Controller
 
         }
 
-        return $this->redirect($this->generateUrl('wh_admin_users'));
+        // return $this->redirect($this->generateUrl('wh_admin_users'));
 
 
     }
