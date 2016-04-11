@@ -262,9 +262,7 @@ class UserController extends Controller
 
         }
 
-        // return $this->redirect($this->generateUrl('wh_admin_users'));
-
-
+        return $this->redirect($this->generateUrl('wh_admin_users'));
     }
 
 
