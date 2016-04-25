@@ -250,7 +250,7 @@ class UserController extends Controller
         $User->setPlainPassword($password);
         $User->setEnabled(true);
 
-        $this->get('fos_user.user_manager')->updateUser($User);
+        $this->get('fos_user.user_manager')->updateUser($User, true);
 
         if ($this->get('wh.user.notification')->sendAccess($User, $password)) {
 
