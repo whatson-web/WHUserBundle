@@ -44,5 +44,15 @@ class SecurityController extends Controller
             ));
     }
 
+    /**
+     * @Route("/logout", name="wh_admin_logout")
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
+     */
+    public function logoutAction(Request $request)
+    {
+
+    }
+
 
 }
