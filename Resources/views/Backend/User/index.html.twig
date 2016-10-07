@@ -4,7 +4,7 @@
 
 {% block ariane %}{{ parent() }}<li><a href="{{ path('wh_admin_users') }}">liste</a></li>{% endblock %}
 
-{% block title_right %}<a href="{{ path('wh_admin_user_create') }}" class="btn btn-success pull-right" {{ Smart.modal() }}><i class="fa fa-plus"></i> Nouveau</a>{% endblock %}
+{% block title_right %}<a href="{{ path('wh_admin_user_create') }}" class="btn btn-success pull-right" {{ Smart.modal() }}><i class="fa fa-plus"></i> {{ 'Nouveau' | trans }}</a>{% endblock %}
 
 {% block subtitle %}> Liste{% endblock %}
 
@@ -12,7 +12,7 @@
 
         <div class="well">
 
-            <h1>Gestion des membres</h1>
+            <h1>{{ 'Gestion des membres' | trans }}</h1>
 
             {{ form_start(form) }}
 
@@ -20,7 +20,7 @@
                 <div class="col-md-8">{{ form_row(form.Search) }}</div>
                 <div class="col-md-4">
                     <button class="btn btn-success" type="submit">
-                        <i class="fa fa-check"></i> <span class="hidden-mobile">Chercher</span>
+                        <i class="fa fa-check"></i> <span class="hidden-mobile">{{ 'Chercher' | trans }}</span>
                     </button>
                 </div>
             </div>
